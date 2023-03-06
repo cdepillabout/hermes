@@ -64,15 +64,17 @@ Left (SIMDException (DocumentError {path = "/hello/1", errorMsg = "Error while g
 ```
 
 ## Benchmarks
-We benchmark the following operations using both `hermes-json` and `aeson` strict ByteString decoders:
-* Decode an array of 1 million 3-element arrays of doubles
-* Full decoding of a large-ish (12 MB) JSON array of Person objects
-* Partial decoding of Twitter status objects to highlight the on-demand benefits
-* Decoding entire documents into `Data.Aeson.Value`
+
+We benchmark the following operations:
+
+* Decode a 1,000,000x3 2D matrix of doubles
+* Full decoding of a 9000-element array of Person objects
+* Partial decoding of 100 Twitter status objects
+* Full decoding of documents into `Data.Aeson.Value`
 
 ### Specs
 
-* GHC 9.4.4 with `-O2`
+* GHC 9.4.4
 * aeson-2.1.2.1 with text-2.0.2
 * Apple M1 Pro
 
