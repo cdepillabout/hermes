@@ -21,4 +21,6 @@ aesonEq =
     testCase "Matches Aeson Value" $ do
       Right hv <- H.decodeEither H.hValueToAeson <$> twitter
       Right ha <- A.D.eitherDecodeStrict @A.Value <$> twitter
-      hv @?= ha
+      print hv
+      print ha
+      assertEqual "" hv  ha

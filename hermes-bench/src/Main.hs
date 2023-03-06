@@ -82,7 +82,7 @@ data Person =
     deriving stock (Show, Generic)
     deriving anyclass NFData
 
-decodePerson :: Value -> Decoder Person
+decodePerson :: Decoder Person
 decodePerson = withObject $ \obj ->
   Person
     <$> atKey "_id" text obj
@@ -108,7 +108,7 @@ decodePerson = withObject $ \obj ->
     <*> atKey "greeting" (nullable text) obj
     <*> atKey "favoriteFruit" text obj
 
-decodeFriend :: Value -> Decoder Friend
+decodeFriend :: Decoder Friend
 decodeFriend = withObject $ \obj ->
   Friend
     <$> atKey "id" int obj
@@ -179,18 +179,22 @@ data User =
     deriving stock (Show, Generic)
     deriving anyclass (NFData, Aeson.FromJSON)
 
-decodeTwitter :: Value -> Decoder Twitter
+decodeTwitter :: Decoder Twitter
 decodeTwitter = withObject $ \obj ->
   Twitter
     <$> atKey "statuses" (list decodeStatus) obj
 
-decodeStatus :: Value -> Decoder Status
+decodeStatus :: Decoder Status
 decodeStatus = withObject $ \obj -> do
   u <- atKey "user" decodeUser obj
-  mdMap <- atKey "metadata" (objectAsMap pure text) obj
-  pure $ Status u mdMap
+  -- val2 <- atKey "metadata" pure obj
+  -- _ <- atKey "retweeted" bool obj
+  md <- atKey "metadata" (objectAsMap pure text) obj
+  -- md <- objectAsMap pure text val2
+  -- u <- decodeUser val1
+  pure $ Status u md
 
-decodeUser :: Value -> Decoder User
+decodeUser :: Decoder User
 decodeUser = withObject $ \obj -> do
   User
     <$> atKey "screen_name" text obj
@@ -223,5 +227,5 @@ parseUser =
 genDoubles :: Int -> Double -> BS.ByteString
 genDoubles x v = BSL.toStrict . Aeson.encode $ replicate x (replicate 3 v)
 
-decodeDoubles :: Value -> Decoder [[Double]]
+decodeDoubles :: Decoder [[Double]]
 decodeDoubles = list $ list double

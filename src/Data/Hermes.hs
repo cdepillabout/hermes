@@ -59,7 +59,6 @@ module Data.Hermes
   , isNull
   , withArray
   , withBool
-  , withDocumentValue
   , withDouble
   , withInt
   , withObject
@@ -92,11 +91,9 @@ import           Data.Hermes.Decoder.Internal
   , withHermesEnv
   )
 import           Data.Hermes.SIMDJSON.Types
-import           Data.Hermes.SIMDJSON.Wrapper (withInputBuffer)
 
 -- | Decode a strict `ByteString` using the simdjson::ondemand bindings.
-decodeEither :: (Value -> Decoder a) -> ByteString -> Either HermesException a
+decodeEither :: Decoder a -> ByteString -> Either HermesException a
 decodeEither d bs =
-  Unsafe.unsafePerformIO . try .  withHermesEnv $ \hEnv ->
-    withInputBuffer bs $ \input ->
-      flip runReaderT hEnv . runDecoder $ withDocumentValue d input
+  Unsafe.unsafePerformIO . try .  withHermesEnv Nothing bs $ \hEnv ->
+    flip runReaderT hEnv $ runDecoder d

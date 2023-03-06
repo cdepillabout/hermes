@@ -108,6 +108,22 @@ We benchmark the following operations:
 
 Because the On Demand API uses a forward-only iterator (except for object fields), you must be mindful to not access values out of order. In other words, you should not hold onto a `Value` to parse later since the iterator may have already moved beyond it.
 
+For example, the current interface will not protect you from this:
+
+```haskell
+decodeStatus :: Value -> Decoder Status
+decodeStatus = withObject $ \obj -> do
+  val <- atKey "user" pure obj
+  _ <- atKey "retweeted" pure obj
+  user <- decodeUser val
+  pure $ Status user
+
+ghci> decodeEither decodeTwitter twitter
+Left (SIMDException (DocumentError {path = "/statuses/0/screen_name", errorMsg = "The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc."}))
+```
+
+This is due to moving the iterator to the `retweeted` field and not consuming its `Value` (i.e. using `pure`). When we run `decodeUser` the iterator starts moving forward again, but from the wrong position, as it is expecting an object structural and not a boolean value.
+
 Because the On Demand API does not validate the entire document upon creating the iterator (besides UTF-8 validation and basic well-formed checks), it is possible to parse an invalid JSON document but not realize it until later. If you need the entire document to be validated up front then a DOM parser is a better fit for you.
 
 > The On Demand approach is less safe than DOM: we only validate the components of the JSON document that are used and it is possible to begin ingesting an invalid document only to find out later that the document is invalid. Are you fine ingesting a large JSON document that starts with well formed JSON but ends with invalid JSON content?

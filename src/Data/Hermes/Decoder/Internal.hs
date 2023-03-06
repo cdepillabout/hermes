@@ -3,6 +3,7 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -27,9 +28,11 @@ import           Control.Applicative (Alternative(..))
 import           Control.DeepSeq (NFData)
 import           Control.Exception (Exception, bracket, catch, throwIO)
 import           Control.Monad.Primitive (PrimMonad(..))
-import           Control.Monad.Reader (MonadReader, asks)
+import           Control.Monad.Reader (MonadReader(..), asks)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Reader (ReaderT(..))
+import qualified Control.Monad.Trans.Reader as ReaderT
+import           Data.ByteString (ByteString)
 import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Foreign.C as F
@@ -43,8 +46,10 @@ import           Data.Hermes.SIMDJSON.Types
   , SIMDDocument
   , SIMDErrorCode(..)
   , SIMDParser
+  , Value
   )
 import           Data.Hermes.SIMDJSON.Wrapper
+import           Data.Hermes.SIMDJSON
 
 -- | A Decoder is some context around the IO needed by the C FFI to allocate local memory.
 -- Users have no access to the underlying IO, since this could allow decoders to launch nukes.
@@ -55,8 +60,13 @@ newtype Decoder a = Decoder { runDecoder :: ReaderT HermesEnv IO a }
     ( Functor
     , Applicative
     , Monad
-    , MonadReader HermesEnv
     )
+
+instance MonadReader HermesEnv Decoder where
+    ask = Decoder ReaderT.ask
+    {-# INLINE ask #-}
+    local f = Decoder . ReaderT.local f . runDecoder
+    {-# INLINE local #-}
 
 instance Alternative Decoder where
   empty = fail "Unspecified error"
@@ -88,38 +98,46 @@ data HermesEnv =
     { hParser   :: !(F.ForeignPtr SIMDParser)
     , hDocument :: !(F.ForeignPtr SIMDDocument)
     , hPath     :: !Text
+    , hValue    :: !Value
     }
 
 -- | Make a new HermesEnv. This allocates foreign references to
 -- a simdjson::ondemand::parser and a simdjson::ondemand::document.
 -- The optional capacity argument sets the max capacity in bytes for the
 -- simdjson::ondemand::parser, which defaults to 4GB.
-mkHermesEnv :: Maybe Int -> IO HermesEnv
-mkHermesEnv mCapacity = do
-  parser   <- mkSIMDParser mCapacity
-  document <- mkSIMDDocument
-  pure HermesEnv
-    { hParser   = parser
-    , hDocument = document
-    , hPath     = ""
-    }
+withHermesEnv :: Maybe Int -> ByteString -> (HermesEnv -> IO a) -> IO a
+withHermesEnv mCapacity bs f =
+  allocaValue $ \val -> do
+    parser   <- mkSIMDParser mCapacity
+    document <- mkSIMDDocument
+    str <- mkSIMDPaddedStr bs
+    F.withForeignPtr document $ \doc ->
+      F.withForeignPtr parser $ \p -> do
+        F.withForeignPtr str $ \input -> do
+          _ <- getDocumentValueImpl (Parser p) (InputBuffer input) (Document doc) val
+          f $ HermesEnv
+            { hParser   = parser
+            , hDocument = document
+            , hPath     = ""
+            , hValue    = val
+            }
 
 -- | Shortcut for constructing a default `HermesEnv`.
-mkHermesEnv_ :: IO HermesEnv
-mkHermesEnv_ = mkHermesEnv Nothing
+-- mkHermesEnv_ :: ByteString -> IO HermesEnv
+-- mkHermesEnv_ bs = mkHermesEnv Nothing bs
 
 -- | Internal finalizer for simdjson instances.
-cleanupHermesEnv :: HermesEnv -> IO ()
-cleanupHermesEnv hEnv = do
-  F.finalizeForeignPtr (hDocument hEnv)
-  F.finalizeForeignPtr (hParser hEnv)
+-- cleanupHermesEnv :: HermesEnv -> IO ()
+-- cleanupHermesEnv hEnv = do
+--   F.finalizeForeignPtr (hDocument hEnv)
+--   F.finalizeForeignPtr (hParser hEnv)
 
 -- | Run an action in IO that is passed a `HermesEnv`.
-withHermesEnv :: (HermesEnv -> IO a) -> IO a
-withHermesEnv = bracket acquire release
-  where
-    acquire = mkHermesEnv_
-    release = cleanupHermesEnv
+-- withHermesEnv :: ByteString -> (HermesEnv -> IO a) -> IO a
+-- withHermesEnv bs = bracket acquire release
+--   where
+--     acquire = mkHermesEnv_ bs
+--     release = cleanupHermesEnv
 
 -- | The library can throw exceptions from simdjson in addition to
 -- its own exceptions.
