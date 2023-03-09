@@ -478,20 +478,20 @@ iterateOverFields fk fv iterPtr =
 {-# INLINE iterateOverFields #-}
 
 withUnorderedField :: Decoder a -> Object -> Text -> Decoder a
-withUnorderedField f objPtr key = Decoder $ \vPtr ->
+withUnorderedField f objPtr key = Decoder $ \_ ->
   withRunInIO $ \run ->
     Unsafe.unsafeUseAsCStringLen (T.encodeUtf8 key) $ \(cstr, len) ->
-      run $ withKey key $ do
+      allocaValue $ \vPtr -> run $ withKey key $ do
         err <- liftIO $ findFieldUnorderedImpl objPtr cstr len vPtr
         handleErrorCode "" err
         runDecoder f vPtr
 {-# INLINE withUnorderedField #-}
 
 withUnorderedOptionalField :: Decoder a -> Object -> Text -> Decoder (Maybe a)
-withUnorderedOptionalField f objPtr key = Decoder $ \vPtr ->
+withUnorderedOptionalField f objPtr key = Decoder $ \_ ->
   withRunInIO $ \run ->
     Unsafe.unsafeUseAsCStringLen (T.encodeUtf8 key) $ \(cstr, len) ->
-      run $ withKey key $ do
+      allocaValue $ \vPtr -> run $ withKey key $ do
         err <- liftIO $ findFieldUnorderedImpl objPtr cstr len vPtr
         let errCode = toEnum $ fromIntegral err
         if | errCode == SUCCESS       -> Just <$> runDecoder f vPtr
@@ -500,10 +500,10 @@ withUnorderedOptionalField f objPtr key = Decoder $ \vPtr ->
 {-# INLINE withUnorderedOptionalField #-}
 
 withField :: Decoder a -> Object -> Text -> Decoder a
-withField f objPtr key = Decoder $ \val ->
+withField f objPtr key = Decoder $ \_ ->
   withRunInIO $ \run ->
     Unsafe.unsafeUseAsCStringLen (T.encodeUtf8 key) $ \(cstr, len) ->
-      run $ withKey key $ do
+      allocaValue $ \val -> run $ withKey key $ do
         err <- liftIO $ findFieldImpl objPtr cstr len val
         handleErrorCode "" err
         runDecoder f val
