@@ -175,19 +175,19 @@ withArray f = Decoder $ \val ->
 -- | Find an object field by key, where an exception is thrown
 -- if the key is missing.
 atKey :: Text -> Decoder a -> Object -> Decoder a
-atKey key parser obj = Decoder . const $ withUnorderedField parser obj key
+atKey key parser obj = withUnorderedField parser obj key
 {-# INLINE atKey #-}
 
 -- | Find an object field by key, where Nothing is returned
 -- if the key is missing.
 atKeyOptional :: Text -> Decoder a -> Object -> Decoder (Maybe a)
-atKeyOptional key parser obj = Decoder . const $ withUnorderedOptionalField parser obj key
+atKeyOptional key parser obj = withUnorderedOptionalField parser obj key
 {-# INLINE atKeyOptional #-}
 
 -- | Uses find_field, which means if you access a field out-of-order
 -- this will throw an exception. It also cannot support optional fields.
 atKeyStrict :: Text -> Decoder a -> Object -> Decoder a
-atKeyStrict key parser obj = Decoder . const $ withField parser obj key
+atKeyStrict key parser obj = withField parser obj key
 {-# INLINE atKeyStrict #-}
 
 -- | Parse a homogenous JSON array into a Haskell list.
@@ -319,22 +319,22 @@ parseScientific
 -- Internal Functions
 
 -- | Helper to work with an ArrayIter started from a Value assumed to be an Array.
-withArrayIter :: (ArrayIter -> DecoderM a) -> Decoder a
+withArrayIter :: (ArrayIter -> Decoder a) -> Decoder a
 withArrayIter f = Decoder $ \valPtr ->
   withRunInIO $ \run ->
     allocaArrayIter $ \iterPtr -> do
       err <- getArrayIterFromValueImpl valPtr iterPtr
       run $ do
         handleErrorCode (typePrefix "array") err
-        f iterPtr
+        runDecoder (f iterPtr) valPtr
 {-# INLINE withArrayIter #-}
 
 -- | Execute a function on each Value in an ArrayIter and
 -- accumulate the results into a list.
-iterateOverArray :: Decoder a -> ArrayIter -> DecoderM [a]
-iterateOverArray f iterPtr =
+iterateOverArray :: Decoder a -> ArrayIter -> Decoder [a]
+iterateOverArray f iterPtr = Decoder $ \valPtr ->
   withRunInIO $ \run ->
-    allocaValue $ \valPtr -> run $ go (0 :: Int) DList.empty valPtr
+    run $ go (0 :: Int) DList.empty valPtr
   where
     go !n !acc !valPtr = do
       isOver <- fmap F.toBool . liftIO $ arrayIterIsDoneImpl iterPtr
@@ -352,7 +352,7 @@ iterateOverArray f iterPtr =
 {-# INLINE iterateOverArray #-}
 
 -- | Helper to work with an ArrayIter and its length.
-withArrayLenIter :: (ArrayIter -> Int -> DecoderM a) -> Decoder a
+withArrayLenIter :: (ArrayIter -> Int -> Decoder a) -> Decoder a
 withArrayLenIter f = Decoder $ \valPtr ->
   withRunInIO $ \run ->
     allocaArrayIter $ \iterPtr ->
@@ -361,18 +361,17 @@ withArrayLenIter f = Decoder $ \valPtr ->
         len <- fmap fromIntegral $ F.peek outLen
         run $ do
           handleErrorCode "" err
-          f iterPtr len
+          runDecoder (f iterPtr len) valPtr
 {-# INLINE withArrayLenIter #-}
 
 -- | Execute a function on each Value in an ArrayIter and
 -- accumulate the results into a generic `Vector`.
-iterateOverArrayLen :: G.Vector v a => Decoder a -> ArrayIter -> Int -> DecoderM (v a)
-iterateOverArrayLen f iterPtr len =
-  withRunInIO $ \run ->
-    allocaValue $ \valPtr -> do
-      v <- GM.new len
-      _ <- run . runDecoderPrimM $ go (0 :: Int) v valPtr
-      G.unsafeFreeze v
+iterateOverArrayLen :: G.Vector v a => Decoder a -> ArrayIter -> Int -> Decoder (v a)
+iterateOverArrayLen f iterPtr len = Decoder $ \valPtr ->
+  withRunInIO $ \run -> do
+    v <- GM.new len
+    _ <- run . runDecoderPrimM $ go (0 :: Int) v valPtr
+    G.unsafeFreeze v
   where
     go !n !acc !valPtr = do
       isOver <- fmap F.toBool . DecoderPrimM . liftIO $ arrayIterIsDoneImpl iterPtr
@@ -390,14 +389,14 @@ iterateOverArrayLen f iterPtr len =
 {-# INLINE iterateOverArrayLen #-}
 
 -- | Helper to work with an ObjectIter started from a Value assumed to be an Object.
-withObjectIter :: (ObjectIter -> DecoderM a) -> Decoder a
+withObjectIter :: (ObjectIter -> Decoder a) -> Decoder a
 withObjectIter f = Decoder $ \valPtr ->
   withRunInIO $ \run ->
     allocaObjectIter $ \iterPtr -> do
       err <- getObjectIterFromValueImpl valPtr iterPtr
       run $ do
         handleErrorCode (typePrefix "object") err
-        f iterPtr
+        runDecoder (f iterPtr) valPtr
 {-# INLINE withObjectIter #-}
 
 -- | Execute a function on each Field in an ObjectIter and accumulate into a `Map`.
@@ -406,12 +405,12 @@ iterateOverFieldsMap
   => (Text -> Decoder a)
   -> Decoder b
   -> ObjectIter
-  -> DecoderM (Map a b)
-iterateOverFieldsMap fk fv iterPtr =
+  -> Decoder (Map a b)
+iterateOverFieldsMap fk fv iterPtr = Decoder $ \valPtr ->
   withRunInIO $ \run ->
     F.alloca $ \lenPtr ->
       F.alloca $ \keyPtr ->
-        allocaValue $ \valPtr -> run $ go M.empty keyPtr lenPtr valPtr
+        run $ go M.empty keyPtr lenPtr valPtr
   where
     go !acc !keyPtr !lenPtr !valPtr = do
       isOver <- fmap F.toBool . liftIO $ objectIterIsDoneImpl iterPtr
@@ -440,12 +439,12 @@ iterateOverFields
   :: (Text -> Decoder a)
   -> Decoder b
   -> ObjectIter
-  -> DecoderM [(a, b)]
-iterateOverFields fk fv iterPtr =
+  -> Decoder [(a, b)]
+iterateOverFields fk fv iterPtr = Decoder $ \valPtr ->
   withRunInIO $ \run ->
     F.alloca $ \lenPtr ->
       F.alloca $ \keyPtr ->
-        allocaValue $ \valPtr -> run $ go DList.empty keyPtr lenPtr valPtr
+        run $ go DList.empty keyPtr lenPtr valPtr
   where
     go !acc !keyPtr !lenPtr !valPtr = do
       isOver <- fmap F.toBool . liftIO $ objectIterIsDoneImpl iterPtr
@@ -468,21 +467,21 @@ iterateOverFields fk fv iterPtr =
           pure $ DList.toList acc
 {-# INLINE iterateOverFields #-}
 
-withUnorderedField :: Decoder a -> Object -> Text -> DecoderM a
-withUnorderedField f objPtr key =
+withUnorderedField :: Decoder a -> Object -> Text -> Decoder a
+withUnorderedField f objPtr key = Decoder $ \vPtr ->
   withRunInIO $ \run ->
     Unsafe.unsafeUseAsCStringLen (T.encodeUtf8 key) $ \(cstr, len) ->
-      allocaValue $ \vPtr -> run $ withKey key $ do
+      run $ withKey key $ do
         err <- liftIO $ findFieldUnorderedImpl objPtr cstr len vPtr
         handleErrorCode "" err
         runDecoder f vPtr
 {-# INLINE withUnorderedField #-}
 
-withUnorderedOptionalField :: Decoder a -> Object -> Text -> DecoderM (Maybe a)
-withUnorderedOptionalField f objPtr key =
+withUnorderedOptionalField :: Decoder a -> Object -> Text -> Decoder (Maybe a)
+withUnorderedOptionalField f objPtr key = Decoder $ \vPtr ->
   withRunInIO $ \run ->
     Unsafe.unsafeUseAsCStringLen (T.encodeUtf8 key) $ \(cstr, len) ->
-      allocaValue $ \vPtr -> run $ withKey key $ do
+      run $ withKey key $ do
         err <- liftIO $ findFieldUnorderedImpl objPtr cstr len vPtr
         let errCode = toEnum $ fromIntegral err
         if | errCode == SUCCESS       -> Just <$> runDecoder f vPtr
@@ -490,11 +489,11 @@ withUnorderedOptionalField f objPtr key =
            | otherwise                -> Nothing <$ handleErrorCode "" err
 {-# INLINE withUnorderedOptionalField #-}
 
-withField :: Decoder a -> Object -> Text -> DecoderM a
-withField f objPtr key =
+withField :: Decoder a -> Object -> Text -> Decoder a
+withField f objPtr key = Decoder $ \val ->
   withRunInIO $ \run ->
     Unsafe.unsafeUseAsCStringLen (T.encodeUtf8 key) $ \(cstr, len) ->
-      allocaValue $ \val -> run $ withKey key $ do
+      run $ withKey key $ do
         err <- liftIO $ findFieldImpl objPtr cstr len val
         handleErrorCode "" err
         runDecoder f val
