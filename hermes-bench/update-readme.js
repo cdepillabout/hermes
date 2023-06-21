@@ -6,13 +6,23 @@ const path = require('path');
 const markdownPath = path.join(__dirname, '../README.md');
 
 Promise.all([
-  readFile('bench.csv'),
-]).then(([bench]) => {
-  const benchTable = csvToMd.fromString(bench.toString());
+  readFile('arrays.csv'),
+  readFile('partial.csv'),
+  readFile('persons.csv'),
+]).then(([arrays, partial, persons]) => {
+  const arraysTable = csvToMd.fromString(arrays.toString());
+  const partialTable = csvToMd.fromString(partial.toString());
+  const personsTable = csvToMd.fromString(persons.toString());
   const config = {
     transforms: {
-      BENCHES(content, options) {
-        return benchTable;
+      ARRAYS(content, options) {
+        return arraysTable;
+      },
+      PARTIAL(content, options) {
+        return partialTable;
+      },
+      PERSONS(content, options) {
+        return personsTable;
       }
     }
   };

@@ -85,24 +85,41 @@ We benchmark the following operations using both `hermes-json` and `aeson` stric
 * aeson-2.1.2.1 (using `Data.Aeson.Decoding`) with text-2.0.2
 * Apple M1 Pro
 
-![](https://raw.githubusercontent.com/velveteer/hermes/master/hermes-bench/bench.svg)
+#### Arrays
+![](https://raw.githubusercontent.com/velveteer/hermes/master/hermes-bench/arrays.svg)
 
-<!-- AUTO-GENERATED-CONTENT:START (BENCHES) -->
-| Name                                    | Mean (ps)     | 2*Stdev (ps) | Allocated  | Copied     | Peak Memory |
-| --------------------------------------- | ------------- | ------------ | ---------- | ---------- | ----------- |
-| All.Decode.Arrays.Hermes                | 267914650000  | 10610366160  | 503599934  | 439150544  | 541065216   |
-| All.Decode.Arrays.Aeson                 | 2214928800000 | 160279563772 | 7094759111 | 2392723388 | 1166016512  |
-| All.Decode.Persons.Hermes               | 47338175000   | 4290343628   | 144901928  | 57032737   | 1166016512  |
-| All.Decode.Persons.Aeson                | 132864400000  | 9509102680   | 357269946  | 188529742  | 1166016512  |
-| All.Decode.Partial Twitter.Hermes       | 241083593     | 13856196     | 348540     | 3088       | 1166016512  |
-| All.Decode.Partial Twitter.JsonStream   | 2116192187    | 158907568    | 15259526   | 273821     | 1166016512  |
-| All.Decode.Partial Twitter.Aeson        | 4254060937    | 262619196    | 12538003   | 4634594    | 1166016512  |
-| All.Decode.Persons (Aeson Value).Hermes | 106420425000  | 3747538126   | 303886293  | 135388183  | 1166016512  |
-| All.Decode.Persons (Aeson Value).Aeson  | 119489550000  | 9713032080   | 286148916  | 177027852  | 1166016512  |
-| All.Decode.Twitter (Aeson Value).Hermes | 4164246875    | 240020934    | 12368752   | 4149211    | 1166016512  |
-| All.Decode.Twitter (Aeson Value).Aeson  | 4810817187    | 345165042    | 12539421   | 5527424    | 1166016512  |
+<!-- AUTO-GENERATED-CONTENT:START (ARRAYS) -->
+| Name                     | Mean (ps)     | 2*Stdev (ps) | Allocated  | Copied     | Peak Memory |
+| ------------------------ | ------------- | ------------ | ---------- | ---------- | ----------- |
+| All.Decode.Arrays.Hermes | 273653250000  | 15205262246  | 503599500  | 439094828  | 541065216   |
+| All.Decode.Arrays.Aeson  | 2218769800000 | 17033918638  | 7095177999 | 2344539338 | 1241513984  |
+|                          |
+<!-- AUTO-GENERATED-CONTENT:END (ARRAYS) -->
+
+#### Partial
+![](https://raw.githubusercontent.com/velveteer/hermes/master/hermes-bench/partial.svg)
+
+<!-- AUTO-GENERATED-CONTENT:START (PARTIAL) -->
+| Name                                  | Mean (ps)  | 2*Stdev (ps) | Allocated | Copied  | Peak Memory |
+| ------------------------------------- | ---------- | ------------ | --------- | ------- | ----------- |
+| All.Decode.Partial Twitter.Hermes     | 259343457  | 24015456     | 286819    | 2463    | 94371840    |
+| All.Decode.Partial Twitter.JsonStream | 2150687500 | 111820868    | 15259529  | 270063  | 110100480   |
+| All.Decode.Partial Twitter.Aeson      | 4381687500 | 360705714    | 12538008  | 4632553 | 110100480   |
+|                                       |
+<!-- AUTO-GENERATED-CONTENT:END (PARTIAL) -->
+
+#### Persons
+![](https://raw.githubusercontent.com/velveteer/hermes/master/hermes-bench/persons.svg)
+
+<!-- AUTO-GENERATED-CONTENT:START (PERSONS) -->
+| Name                                    | Mean (ps)    | 2*Stdev (ps) | Allocated | Copied    | Peak Memory |
+| --------------------------------------- | ------------ | ------------ | --------- | --------- | ----------- |
+| All.Decode.Persons.Hermes               | 45604575000  | 4137396578   | 121553446 | 55640469  | 160432128   |
+| All.Decode.Persons.Aeson                | 135784600000 | 9435983258   | 357269946 | 188159609 | 273678336   |
+| All.Decode.Persons (Aeson Value).Hermes | 108284075000 | 5724445824   | 293956167 | 134278262 | 273678336   |
+| All.Decode.Persons (Aeson Value).Aeson  | 121856250000 | 8402584442   | 286355331 | 174336922 | 273678336   |
 |                                         |
-<!-- AUTO-GENERATED-CONTENT:END (BENCHES) -->
+<!-- AUTO-GENERATED-CONTENT:END (PERSONS) -->
 
 ## Performance Tips
 

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" height="227" width="960.0" font-size="16" font-family="sans-serif" stroke-width="2">
+<g transform="translate(10.0 0)">
+<g fill="hsl(0, 100%, 40%)">
+<text y="22">Decode.Persons.Hermes</text>
+<text y="22" x="295.1943831807909" text-anchor="end">45.6 ms</text>
+</g>
+<g>
+<title>45.6 ms ± 4.1 ms</title>
+<rect y="28" rx="5" height="22" width="295.1943831807909" fill="hsl(0, 100%, 80%)" stroke="hsl(0, 100%, 55%)" />
+<g stroke="hsl(0, 100%, 40%)"><line x1="268.4133808182642" x2="321.9753855433176" y1="39" y2="39" />
+<line x1="268.4133808182642" x2="268.4133808182642" y1="33" y2="45" />
+<line x1="321.9753855433176" x2="321.9753855433176" y1="33" y2="45" />
+</g>
+</g>
+<g fill="hsl(90, 100%, 40%)">
+<text y="77">Decode.Persons.Aeson</text>
+<text y="77" x="878.9217143773496" text-anchor="end">136  ms</text>
+</g>
+<g>
+<title>136  ms ± 9.4 ms</title>
+<rect y="83" rx="5" height="22" width="878.9217143773496" fill="hsl(90, 100%, 80%)" stroke="hsl(90, 100%, 55%)" />
+<g stroke="hsl(90, 100%, 40%)"><line x1="817.8434287546993" x2="940.0" y1="94" y2="94" />
+<line x1="817.8434287546993" x2="817.8434287546993" y1="88" y2="100" />
+<line x1="940.0" x2="940.0" y1="88" y2="100" />
+</g>
+</g>
+<g fill="hsl(180, 100%, 40%)">
+<text y="132">Decode.Persons (Aeson Value).Hermes</text>
+<text y="132" x="700.9132467066627" text-anchor="end">108  ms</text>
+</g>
+<g>
+<title>108  ms ± 5.7 ms</title>
+<rect y="138" rx="5" height="22" width="700.9132467066627" fill="hsl(180, 100%, 80%)" stroke="hsl(180, 100%, 55%)" />
+<g stroke="hsl(180, 100%, 40%)"><line x1="663.8594148473035" x2="737.9670785660219" y1="149" y2="149" />
+<line x1="663.8594148473035" x2="663.8594148473035" y1="143" y2="155" />
+<line x1="737.9670785660219" x2="737.9670785660219" y1="143" y2="155" />
+</g>
+</g>
+<g fill="hsl(270, 100%, 40%)">
+<text y="187">Decode.Persons (Aeson Value).Aeson</text>
+<text y="187" x="788.7647358949021" text-anchor="end">122  ms</text>
+</g>
+<g>
+<title>122  ms ± 8.4 ms</title>
+<rect y="193" rx="5" height="22" width="788.7647358949021" fill="hsl(270, 100%, 80%)" stroke="hsl(270, 100%, 55%)" />
+<g stroke="hsl(270, 100%, 40%)"><line x1="734.3755494704984" x2="843.1539223193057" y1="204" y2="204" />
+<line x1="734.3755494704984" x2="734.3755494704984" y1="198" y2="210" />
+<line x1="843.1539223193057" x2="843.1539223193057" y1="198" y2="210" />
+</g>
+</g>
+</g>
+</svg>

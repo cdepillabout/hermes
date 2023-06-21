@@ -97,7 +97,7 @@ instance NFData HermesEnv where
 
 data Path =
     Key !Text
-  | Idx !Int
+  | Idx {-# UNPACK #-} !Int
   | Pointer !Text
   deriving (Eq, Show, Generic)
 
@@ -157,7 +157,7 @@ parseByteStringIO hEnv d bs =
       F.withForeignPtr (hParser hEnv) $ \parserPtr ->
         F.withForeignPtr (hDocument hEnv) $ \docPtr -> do
           err <- getDocumentValueImpl (Parser parserPtr) inputPtr (Document docPtr) valPtr
-          flip runReaderT hEnv . runDecoderM $ do
+          flip runReaderT hEnv{hPath=[]} . runDecoderM $ do
             handleErrorCode "" err
             runDecoder d valPtr
 

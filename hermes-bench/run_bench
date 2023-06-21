@@ -1,2 +1,4 @@
 #! /bin/bash
-exec cabal bench --benchmark-options '--csv=bench.csv --svg=bench.svg +RTS -T -RTS'
+cabal bench --benchmark-options '--pattern="Persons" --csv=persons.csv --svg=persons.svg +RTS -T -RTS'
+cabal bench --benchmark-options '--pattern="Partial" --csv=partial.csv --svg=partial.svg +RTS -T -RTS'
+cabal bench --benchmark-options '--pattern="Arrays" --csv=arrays.csv --svg=arrays.svg +RTS -T -RTS'

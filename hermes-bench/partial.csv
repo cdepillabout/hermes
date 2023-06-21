@@ -1,0 +1,4 @@
+Name,Mean (ps),2*Stdev (ps),Allocated,Copied,Peak Memory
+All.Decode.Partial Twitter.Hermes,259343457,24015456,286819,2463,94371840
+All.Decode.Partial Twitter.JsonStream,2150687500,111820868,15259529,270063,110100480
+All.Decode.Partial Twitter.Aeson,4381687500,360705714,12538008,4632553,110100480

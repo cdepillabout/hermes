@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" height="117" width="960.0" font-size="16" font-family="sans-serif" stroke-width="2">
+<g transform="translate(10.0 0)">
+<text fill="hsl(0, 100%, 40%)" y="22">Decode.Arrays.Hermes 274  ms</text>
+<g>
+<title>274  ms ±  15 ms</title>
+<rect y="28" rx="5" height="22" width="115.05216350418321" fill="hsl(0, 100%, 80%)" stroke="hsl(0, 100%, 55%)" />
+<g stroke="hsl(0, 100%, 40%)"><line x1="108.65940800776292" x2="121.4449190006035" y1="39" y2="39" />
+<line x1="108.65940800776292" x2="108.65940800776292" y1="33" y2="45" />
+<line x1="121.4449190006035" x2="121.4449190006035" y1="33" y2="45" />
+</g>
+</g>
+<g fill="hsl(180, 100%, 40%)">
+<text y="77">Decode.Arrays.Aeson</text>
+<text y="77" x="932.8384216439741" text-anchor="end">2.219 s</text>
+</g>
+<g>
+<title>2.219 s ±  17 ms</title>
+<rect y="83" rx="5" height="22" width="932.8384216439741" fill="hsl(180, 100%, 80%)" stroke="hsl(180, 100%, 55%)" />
+<g stroke="hsl(180, 100%, 40%)"><line x1="925.6768432879483" x2="940.0" y1="94" y2="94" />
+<line x1="925.6768432879483" x2="925.6768432879483" y1="88" y2="100" />
+<line x1="940.0" x2="940.0" y1="88" y2="100" />
+</g>
+</g>
+</g>
+</svg>
